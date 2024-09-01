@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## R Markdown Introduction
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
@@ -30,19 +30,20 @@ The author mentioned that
 ```{r cars}
 library(dplyr)
 
+
 url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/congress-demographics/data_aging_congress.csv"
 
 congress_age_Data <- read.csv(url)
 
-print(congress_age_Data)
+#print(congress_age_Data)
 
 ```
 
-## Including Plots
+## Conclusion
 
-Here I omitted all the columns except for generation and age_years. The other columns such as the state_abbrev", "party_code", "bioname", "bioguide_id" are redunant information to look at the data for the congress people's ages. What I wanted to here was take the count of all members of congress by generation. Some generations pre 50 states of America I want to omit because the United States was a much smaller country then and didn't have as high of a population count. So we wont have as much members in the house. the only generations I would keep as part of my data are boomers, Gen x, Gen Z, Millenial, Missionary, and Silent generation. These are a better comparison to see what happened in the last century.  
+Here I omitted all the columns except for generation and age_years. The other columns such as the state_abbrev", "party_code", "bioname", "bioguide_id" are redunant information to look at the data for the congress people's ages. What I wanted to here was take the count of all members of congress by generation. Some generations pre 50 states of America I want to omit because the United States was a much smaller country then and didn't have as high of a population count. So we wont have as much members in the house. the only generations I would keep as part of my data are boomers, Gen x, Gen Z, Millennial, Missionary, and Silent generation. These are a better comparison to see what happened in the last century. I filtered data as well through the data from the years 2000-2020. My findings for the filtered data and unfiltered data showed really no change in the average age. One thing I can do better is group by the name of the members of congress and take their median age during their stay at congress. But, I don't think this data really truly represents the declining birth rate and the aging population. The author of the article mentioned that members of congress were always older by default. Another problem is that millennials and Gen Z have not reached their 50's or 60's yet. A final problem I would like to add is that there is also the fact that the incumbent who is running has more experience, better name recognition among the voters giving that person a more likely chance of winning reelection. We can see that with the Presidency since the time Washington was in office that it was very rare for a president to lose the election on his second term in office. There is also the case of a higher life expectancy. I would like to do more analysis on the data as the author did as soon as I learn more how to work with data like this
+
 ```{r pressure, echo=FALSE}
-
 
 group_by_generation <- congress_age_Data %>%
   select(generation, age_years) %>%
@@ -53,6 +54,20 @@ group_by_generation <- congress_age_Data %>%
   )
 
 print(group_by_generation)
+
+filtered_data <- congress_age_Data %>%
+  filter(start_date >= as.Date("2000-01-01") & start_date <= as.Date("2024-12-31"))
+
+
+group_by_generation1 <- filtered_data %>%
+  select(generation, age_years) %>%
+  group_by(generation) %>%
+  summarize(
+    average_age = mean(age_years, na.rm = TRUE),
+    count = n()  
+  )
+
+print(group_by_generation1)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

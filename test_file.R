@@ -1,6 +1,11 @@
 library(dplyr)
 library(lubridate)
 
+install.packages("tinytex")
+
+tinytex::install_tinytex()
+
+
 rm(list = ls())
 
 
@@ -37,8 +42,12 @@ sort_by_start_date <- congress_age_Data %>%
 
 print(selected_columns)
 
+filtered_data <- congress_age_Data %>%
+  filter(start_date >= as.Date("2000-01-01") & start_date <= as.Date("2024-12-31"))
 
-group_by_generation <- congress_age_Data %>%
+print(filtered_data)
+
+group_by_generation <- filtered_data %>%
   select(generation, age_years) %>%
   group_by(generation) %>%
   summarize(
