@@ -1,0 +1,58 @@
+---
+title: "HW Assignment 1"
+author: "Ahmed Hassan"
+date: "2024-08-31"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+In this R Markdown Document I am loading the data of the ages of congress members from modern times all the way back to the 1800s
+The article I got this data from was Congress Today Is Older Than It's Ever Been By Geoffrey Skelley. 
+
+Find the original article here: https://fivethirtyeight.com/features/aging-congress-boomers/ 
+raw data csv: https://raw.githubusercontent.com/fivethirtyeight/data/master/congress-demographics/data_aging_congress.csv 
+
+In this article Geoffrey is arguing that boomers are the oldest members in congress since the past couple century. I picked this article because I believe this goes with the global issue we are facing today of an ageing population, declining birth rates, and increase in cost of living. This is a topic I have been following closely and following whats been happening from country to country that are facing this issue. There is also the case that there is a lot of money to be made from the insider trading and lobbying when being a part of congress. A final point I would like to mention is that we increased life expectancy due to vaccines, nursing, hygeine, and antibiotics. So it's no wonder the baby boomer generation account for half the members of congress.
+
+
+Skelly in the articles talks about how half of congress being boomers can affect policy. For example, he mentions that the median age for house of representative members is 59 years old while the median age for senators is 65 years old. I would say the reason for that age difference between house members and senators is because its a lot harder to stay as a house member than a senator. A senators term is 6 years, while a house term is 2 years. Therefore a person who is in the house of representative is constantly campaigning throughout their term. Besides my conclusion, Skelly argues that these members of congress would pass policy that reflect based on what their age group since the older population tend to vote more than the younger population. 
+
+The author mentioned that 
+```{r cars}
+library(dplyr)
+
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/congress-demographics/data_aging_congress.csv"
+
+congress_age_Data <- read.csv(url)
+
+print(congress_age_Data)
+
+```
+
+## Including Plots
+
+Here I omitted all the columns except for generation and age_years. The other columns such as the state_abbrev", "party_code", "bioname", "bioguide_id" are redunant information to look at the data for the congress people's ages. What I wanted to here was take the count of all members of congress by generation. Some generations pre 50 states of America I want to omit because the United States was a much smaller country then and didn't have as high of a population count. So we wont have as much members in the house. the only generations I would keep as part of my data are boomers, Gen x, Gen Z, Millenial, Missionary, and Silent generation. These are a better comparison to see what happened in the last century.  
+```{r pressure, echo=FALSE}
+
+
+group_by_generation <- congress_age_Data %>%
+  select(generation, age_years) %>%
+  group_by(generation) %>%
+  summarize(
+    average_age = mean(age_years, na.rm = TRUE),
+    count = n()  
+  )
+
+print(group_by_generation)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
