@@ -71,3 +71,24 @@ print(group_by_generation1)
 
 ```
 
+
+I would like to add a data set that shows the total births in the US. I am interested in comparing this dataset with the age of congress in the future 
+```{r}
+
+library(tidyverse)
+library(openintro)
+
+data('present', package='openintro')
+
+present
+
+present <- present %>%
+  mutate(total_births = boys + girls)
+
+ggplot(data = present, aes(x = year, y = total_births)) + 
+  geom_line()
+
+
+```
+
+
