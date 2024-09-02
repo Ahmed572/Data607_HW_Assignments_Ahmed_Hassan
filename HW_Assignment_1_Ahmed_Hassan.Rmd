@@ -2,7 +2,7 @@
 title: "HW Assignment 1"
 author: "Ahmed Hassan"
 date: "2024-08-31"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -27,7 +27,7 @@ In this article Geoffrey is arguing that boomers are the oldest members in congr
 Skelly in the articles talks about how half of congress being boomers can affect policy. For example, he mentions that the median age for house of representative members is 59 years old while the median age for senators is 65 years old. I would say the reason for that age difference between house members and senators is because its a lot harder to stay as a house member than a senator. A senators term is 6 years, while a house term is 2 years. Therefore a person who is in the house of representative is constantly campaigning throughout their term. Besides my conclusion, Skelly argues that these members of congress would pass policy that reflect based on what their age group since the older population tend to vote more than the younger population. 
 
 The author mentioned that 
-```{r cars}
+```{r}
 library(dplyr)
 
 
@@ -35,7 +35,7 @@ url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/congress-d
 
 congress_age_Data <- read.csv(url)
 
-#print(congress_age_Data)
+#congress_age_Data
 
 ```
 
@@ -43,7 +43,10 @@ congress_age_Data <- read.csv(url)
 
 Here I omitted all the columns except for generation and age_years. The other columns such as the state_abbrev", "party_code", "bioname", "bioguide_id" are redunant information to look at the data for the congress people's ages. What I wanted to here was take the count of all members of congress by generation. Some generations pre 50 states of America I want to omit because the United States was a much smaller country then and didn't have as high of a population count. So we wont have as much members in the house. the only generations I would keep as part of my data are boomers, Gen x, Gen Z, Millennial, Missionary, and Silent generation. These are a better comparison to see what happened in the last century. I filtered data as well through the data from the years 2000-2020. My findings for the filtered data and unfiltered data showed really no change in the average age. One thing I can do better is group by the name of the members of congress and take their median age during their stay at congress. But, I don't think this data really truly represents the declining birth rate and the aging population. The author of the article mentioned that members of congress were always older by default. Another problem is that millennials and Gen Z have not reached their 50's or 60's yet. A final problem I would like to add is that there is also the fact that the incumbent who is running has more experience, better name recognition among the voters giving that person a more likely chance of winning reelection. We can see that with the Presidency since the time Washington was in office that it was very rare for a president to lose the election on his second term in office. There is also the case of a higher life expectancy. I would like to do more analysis on the data as the author did as soon as I learn more how to work with data like this
 
-```{r pressure, echo=FALSE}
+```{r}
+library(ggplot2)
+
+
 
 group_by_generation <- congress_age_Data %>%
   select(generation, age_years) %>%
@@ -68,6 +71,19 @@ group_by_generation1 <- filtered_data %>%
   )
 
 print(group_by_generation1)
+
+congress_age_Data$start_date <- as.Date(congress_age_Data$start_date, format = "%Y-%m-%d")
+congress_age_Data$year <- format(congress_age_Data$start_date, "%Y")
+
+congress_avg_age <- congress_age_Data %>%
+  group_by(year) %>%
+  summarize(avg_age = mean(age_years, na.rm = TRUE))
+
+congress_avg_age
+
+#ggplot(data = congress_avg_age, aes(x = year, y = avg_age)) +
+#  geom_line()
+
 
 ```
 
