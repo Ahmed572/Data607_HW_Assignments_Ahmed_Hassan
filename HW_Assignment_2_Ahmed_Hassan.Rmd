@@ -51,9 +51,9 @@ connection <- dbConnect(MySQL(),
 
 
 # Execute the SQL script (this assumes the script contains valid SQL with statements like CREATE DATABASE, etc.)
-dbExecute(connection, "CREATE SCHEMA ahmed_hassan_607_assignments")
+dbExecute(connection, "CREATE SCHEMA IF NOT EXISTS ahmed_hassan_607_assignments")
 
-dbExecute(con, "
+dbExecute(connection, "
 CREATE TABLE ahmed_hassan_607_assignments.Movies (
     movie_id INT PRIMARY KEY,
     title VARCHAR(255) NOT NULL
@@ -140,10 +140,14 @@ Testing if sql statement were pushed into the db
 ```{r}
 library(RMySQL)
 
+user <- Sys.getenv("DB_USER")
+password <- Sys.getenv("DB_PASSWORD")
+host <- Sys.getenv("DB_HOST")
+
 connection <- dbConnect(MySQL(), 
-                 user = 'root',       # Replace with your MySQL username
-                 password = 'password',   # Replace with your MySQL password
-                 host = '127.0.0.1',           # Replace with your MySQL host (e.g., 'localhost')
+                 user = user,       # Replace with your MySQL username
+                 password = password,   # Replace with your MySQL password
+                 host = host,           # Replace with your MySQL host (e.g., 'localhost')
                  dbname = 'ahmed_hassan_607_assignments')     # Replace with your MySQL database name
 
 
