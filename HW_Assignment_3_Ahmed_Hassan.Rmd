@@ -1,0 +1,209 @@
+---
+title: "HW_Assignment_3_Ahmed_Hassan.RMD"
+output: html_document
+author: "Ahmed Hassan"
+date: "`r Sys.Date()`"
+---
+
+1) filtering data for the majors with Data or Statistics in the major's name 
+```{r}
+library(dplyr)
+
+college_majors <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv")
+
+data_stats_majors <- college_majors %>%
+  filter(grepl("DATA|STATISTICS", Major, ignore.case = TRUE))
+
+print(data_stats_majors)
+
+```
+
+2) transform fruit data into a vector
+```{r}
+
+
+fruits <- c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+print(fruits)
+
+
+```
+
+
+3)
+```{r}
+test_strings <- c("aaa", "aaaa",  "aaaab", "aaaabbb","aaaabbbbccccc","aaabbbccc","ababacabcabc","abba", "abab", "abaca", "fijtidkwptof", "abab", "1212", "abcdabcd", "aaaa", "abcabc", "abac", "a", "aaaaaaaaaabbbbbbbbb", "abcba", "hellolleh", "helloolleh", "aaaaabbbbccccc","abacadddddddefege","aaaaaa", "aaabaaa", "aaabbaaa", "aaabcdefaaa", "aaa14rtfterweiotje4riyjw4tyjiow4yjwtpiojwtaaa", "abcdcba", "abcdabc")
+
+# testing  (.)\1\1
+string_a <- "aaaaaaaaaabbbbbbbbb"
+output_a <- regmatches(string_a, gregexpr("(.)\1\1", string_a))
+print(output_a)
+
+
+
+string_b <- "aaaab"
+output_b <- grepl("(.)\1\1", string_b)
+print(output_b)
+
+string_c <- "aabaa"
+output_c <- grepl("(.)\1\1", string_c)
+print(output_c)
+
+#After doing some research on stackoverflow, it seems like single slashes are not allowed in R which is why all my test cases fail. The correct way to pass in this regex is to add in another backslash. So that the new regex would be "(.)\\1\\1". 
+
+
+#Lets do some testing by passing in my test_strings to this new regex and see the behavior of this new regex. 
+
+modified_regex1 <- "(.)\\1\\1"
+modified_regex1_output <- grep(modified_regex1, test_strings, value = TRUE)
+print(modified_regex1_output)
+
+#looks like what this new regex does is return the entire string that contains any character repeated three times consecutively based on my results. 
+
+
+```
+
+
+
+
+```{r}
+# testing (.)(.)\\2\\1"
+
+outputaa <- regmatches(string_a, gregexpr("(.)(.)\\2\\1", string_a))
+print(outputaa)
+
+outputbb <- regmatches(string_a, gregexpr("(.)(.)\\2\\1", string_b))
+print(outputbb)
+
+outputcc <- regmatches(string_a, gregexpr("(.)(.)\\2\\1", output_c))
+
+outputs <- lapply(test_strings, function(x) regmatches(x, gregexpr("(.)(.)\\2\\1", x)))
+print(outputs)
+
+
+string_d = "abcba"
+string_e = "hellolleh"
+string_f = "helloolleh"
+
+
+output_d <- regmatches(string_d, gregexpr("(.)(.)\\2\\1", string_d))
+output_e <- regmatches(string_e, gregexpr("(.)(.)\\2\\1", string_e))
+output_f <- regmatches(string_f, gregexpr("(.)(.)\\2\\1", string_f))
+
+print(output_d)
+print(output_e)
+print(output_f)
+
+
+#Looks like (.)(.)\\2\\1 returns a total of 4 characters and they have to be mirrors of each other half way for example the first two characters have to be equal to the reverse of the second two characters in the string
+# for example the string abba satisfies this condition because ab = ba 
+
+
+```
+
+
+
+```{r}
+# testing (..)\1
+output_aaa <- regmatches(string_a, gregexpr("(..)\1", string_a))
+print(output_aaa)
+
+output_bbb <- regmatches(string_b, gregexpr("(..)\1", string_b))
+print(output_bbb)
+
+
+output_results <- lapply(test_strings, function(x) regmatches(x, gregexpr("(..)\1", x)))
+
+print(output_results)
+
+
+# After doing some research on stackoverflow, it seems like single slashes are not allowed in R which is why all my test cases fail
+
+
+#lets fix this regex by adding one more back slash so that our new regex would be (..)\\1
+#lets test this new regex
+
+modified_regex2 <- "(..)\\1"
+modified_regex2_output <- grep(modified_regex2, test_strings, value = TRUE)
+print(modified_regex2_output)
+
+
+#what this new regex does it goes into a string and look for repeated patterns within a string. For example if my string is abcabc, the repeated pattern in that string is abc 
+
+```
+
+
+
+```{r}
+# Testing "(.).\\1.\\1"
+
+output_results_reg_exp_4 <- lapply(test_strings, function(x) regmatches(x, gregexpr("(.).\\1.\\1", x)))
+print(output_results_reg_exp_4)
+
+# this regex here captures all substrings of a string where the string size can be any numbers of characters n and the substring output is equal to the legnth of 5. We can return a total of any amount of substrings from a string with the size of n. So we can have 1 substring, 2 substrings, 3 substrings, etc. The substring returned has to have to consecutive characters in the string itself. The first, the third, and the fifth character of the substring need to be equal. The second and fourth character of the substring can be of any value
+
+
+# testing "(.)(.)(.).*\\3\\2\\1"
+#output_results_reg_exp_4 <- lapply(test_strings, function(x) regmatches(x, gregexpr("(.)(.)(.).*\\3\\2\\1", x)))
+output_results_reg_exp_4 <- grep("(.)(.)(.).*\\3\\2\\1", test_strings, value = TRUE)
+
+print(output_results_reg_exp_4)
+
+# this regex needs to capture a string with a minimum of 6 characters length. The first 3 characters much match the last three characters while maintaining the order. for examble first three characters abc and the last three characters: abc where abc = abc   but abc != cba. All characters in between the first three characters and the last three characters are captured as well. It doesnt matter what characters are in between and it doesnt matter their order. So this regex captures the entire string with a min length of 6 
+#
+
+
+```
+
+
+Construct regular expressions to match words that:
+
+Start and end with the same character.
+
+```{r}
+
+#Start and end with the same character.
+
+regex1 <- "(.).*\\1"
+
+test_cases1 <- c("noon", "nonn", "aa", "a", "ab", "aba", "abba", "aabx", "arftkehjoegja", "ABCDEFGH")
+
+output_results_regex1 <- grep("(.).*\\1", test_cases1, value = TRUE)
+
+print(output_results_regex1)
+
+
+```
+
+
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+
+```{r}
+regex2 <- "(.)(.).*\\1\\2"
+
+test_cases2 <- c("church", "abab", "hello", "abcabc", "mississippi", "aabbaabb")
+
+
+output_results_regex2 <- grep(regex2, test_cases2, value = TRUE)
+
+print(output_results_regex2)
+
+
+
+```
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+
+```{r}
+
+test_cases3 <- c("eleven", "helllo", "mississippi", "applpe", "banana", "aabcbcdc")
+regex3 <- "((.)\\2\\1\\2)|(.)\\1.*\\1|(.)(.*\\4){2,}"
+
+output_results_regex3 <- grep(regex3, test_cases3, value = TRUE)
+print(output_results_regex3)
+
+
+#this one was complicated and I found one solution for it and I did use AI. Specifically Meta AI from whatsapp. I got three different solutions at first where the first returned eleven, the second solution returned mississipp, and the final solution returned applpe. So what I did  I just combined the three regex solutions to get this large regex that satisfies all condition. 
+```
+
+
+
+
