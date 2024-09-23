@@ -1,0 +1,189 @@
+---
+title: "Project 1 Chess Tournament Data"
+author: "Ahmed Hassan"
+date: "2024-09-20"
+output: html_document
+---
+
+
+Load the data
+```{r}
+#install.packages("stringr", repos = "https://cloud.r-project.org/")
+library(stringr)   
+library(dplyr)
+library(readr)
+
+tournament_data <- read_lines("D:\\CUNY Data Science\\607 - Statistics and Probability for Data Analytics\\data\\tournamentinfo.txt")
+
+head(tournament_data)
+
+
+```
+Parsing the data for the player's info
+```{r}
+cleaned_tournament_data <- tournament_data[!grepl("^[-]+$", tournament_data)]
+
+# Player info: odd lines
+player_info <- cleaned_tournament_data[seq(1, length(cleaned_tournament_data), by = 2)]   
+
+# Ratings info: even lines
+ratings_info <- cleaned_tournament_data[seq(2, length(cleaned_tournament_data), by = 2)] 
+
+print(head(player_info))  
+
+print(head(ratings_info))  
+
+
+```
+
+Creating dataframes out the split data 
+```{r}
+split_by_pipe <- function(line, num_cols) {
+  split_line <- str_trim(unlist(strsplit(line, "\\|")))
+  length_diff <- num_cols - length(split_line)
+  
+  if (length_diff > 0) {
+    split_line <- c(split_line, rep(NA, length_diff))
+  }
+  return(split_line)
+}
+
+# Find the maximum number of columns
+max_cols_player <- max(sapply(player_info, function(x) length(unlist(strsplit(x, "\\|")))))
+max_cols_ratings <- max(sapply(ratings_info, function(x) length(unlist(strsplit(x, "\\|")))))
+
+# Apply the function to split each line
+player_info_df <- do.call(rbind, lapply(player_info, split_by_pipe, num_cols = max_cols_player))
+ratings_info_df <- do.call(rbind, lapply(ratings_info, split_by_pipe, num_cols = max_cols_ratings))
+
+# Convert to data frames
+player_info_df <- as.data.frame(player_info_df, stringsAsFactors = FALSE)
+ratings_info_df <- as.data.frame(ratings_info_df, stringsAsFactors = FALSE)
+
+player_header <- c("Pair Num", "Player Name", "Total Pts", "Round1", "Round2", "Round3", "Round4", "Round5", "Round6", "Round7")
+colnames(player_info_df) <- player_header
+
+ratings_header <- c("Pair Num", "USCF ID / Rtg (Pre->Post)", "Total Pts", "Round1", "Round2", "Round3", "Round4", "Round5", "Round6", "Round7")
+colnames(ratings_info_df) <- ratings_header
+
+player_info_df <- player_info_df[-1, ]
+ratings_info_df <- ratings_info_df[-1, ]
+
+
+print(head(player_info_df))
+print(head(ratings_info_df))
+
+
+
+```
+Extracting from the two dataframes before we create a final dataframe 
+```{r}
+player_names <- player_info_df$`Player Name`
+head(player_names)
+
+
+player_state <- ratings_info_df$`Pair Num`
+print(player_state)
+
+total_points <- as.numeric(player_info_df$'Total Pts') 
+print(total_points)
+
+rounds_df <- player_info_df[, c("Round1", "Round2", "Round3", "Round4", "Round5", "Round6", "Round7")]
+#print(rounds_df)
+
+round_results <- rounds_df  
+round_opponents <- rounds_df  
+for (col in colnames(rounds_df)) {
+
+  round_results[[col]] <- gsub("[0-9]+", "", rounds_df[[col]])  
+  
+  round_opponents[[col]] <- gsub("[^0-9]", "", rounds_df[[col]])  
+}
+
+colnames(round_results) <- paste0("Round", 1:7, "_Result")
+
+colnames(round_opponents) <- paste0("Round", 1:7, "_Opponent")
+
+
+print(head(round_results))
+print(head(round_opponents))
+
+
+ratings <- ratings_info_df$'USCF ID / Rtg (Pre->Post)'
+head(ratings)
+
+pre_rating <- as.numeric(gsub(".*R:\\s*(\\d+).*", "\\1", ratings_info_df$`USCF ID / Rtg (Pre->Post)`))
+print(pre_rating)
+
+
+```
+
+
+Merging all my extracted results into a single dataframe
+
+```{r}
+final_df <- data.frame(
+  Player_Name = player_names,
+  Player_State = player_state,
+  Total_Points = total_points,
+  Pre_Rating = pre_rating,
+  Round1_Opponent = round_opponents$Round1_Opponent,
+  Round1_Result = round_results$Round1_Result,
+  Round2_Opponent = round_opponents$Round2_Opponent,
+  Round2_Result = round_results$Round2_Result,
+  Round3_Opponent = round_opponents$Round3_Opponent,
+  Round3_Result = round_results$Round3_Result,
+  Round4_Opponent = round_opponents$Round4_Opponent,
+  Round4_Result = round_results$Round4_Result,
+  Round5_Opponent = round_opponents$Round5_Opponent,
+  Round5_Result = round_results$Round5_Result,
+  Round6_Opponent = round_opponents$Round6_Opponent,
+  Round6_Result = round_results$Round6_Result,
+  Round7_Opponent = round_opponents$Round7_Opponent,
+  Round7_Result = round_results$Round7_Result,
+  stringsAsFactors = FALSE
+)
+
+print(head(final_df))
+
+```
+
+```{r}
+avg_opponent_rating <- numeric(nrow(final_df))
+
+for (i in 1:nrow(final_df)) {
+  opponent_ratings <- c()
+  
+  opponent_numbers <- as.numeric(c(final_df$Round1_Opponent[i],
+                                   final_df$Round2_Opponent[i],
+                                   final_df$Round3_Opponent[i],
+                                   final_df$Round4_Opponent[i],
+                                   final_df$Round5_Opponent[i],
+                                   final_df$Round6_Opponent[i],
+                                   final_df$Round7_Opponent[i]))
+  
+  valid_opponents <- opponent_numbers[!is.na(opponent_numbers) & opponent_numbers > 0]
+  if (length(valid_opponents) > 0) {
+    for (opponent in valid_opponents) {
+      opponent_rating <- final_df$Pre_Rating[opponent]  # Get the opponent's pre-rating
+      opponent_ratings <- c(opponent_ratings, opponent_rating)  # Add to the list
+    }
+    avg_rating <- mean(as.numeric(opponent_ratings), na.rm = TRUE)
+    print(avg_rating)
+    avg_opponent_rating[i] <- avg_rating
+  } else {
+    avg_opponent_rating[i] <- NA
+  }
+}
+final_df$Avg_Opponent_Rating <- avg_opponent_rating
+
+print(head(final_df))
+
+
+```
+Writing my dataframe to csv file 
+```{r}
+write_csv(final_df, "D:\\CUNY Data Science\\607 - Statistics and Probability for Data Analytics\\output_data\\chess_tournament_averages.csv")
+
+
+```
