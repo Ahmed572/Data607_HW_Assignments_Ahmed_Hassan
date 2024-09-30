@@ -1,0 +1,228 @@
+---
+title: "HW_Assignment_4_Ahmed_Hassan"
+author: "Ahmed Hassan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+Creating a csv file out of the data
+```{r}
+airlines_data <- data.frame(
+  Airline = c("ALASKA", "ALASKA", "AM WEST", "AM WEST"),
+  Status = c("on time", "delayed", "on time", "delayed"),
+  Los_Angeles = c(497, 62, 694, 117),
+  Phoenix = c(221, 12, 4840, 415),
+  San_Diego = c(212, 20, 383, 65),
+  San_Francisco = c(503, 102, 320, 129),
+  Seattle = c(1841, 305, 201, 61)
+)
+
+print(airlines_data)
+
+write.csv(airlines_data, "data/airline_delays.csv", row.names = FALSE)
+
+```
+
+
+Reading back the data from my csv
+```{r}
+library(tidyverse)
+airlines_data <- read.csv("data/airline_delays.csv")
+print(airlines_data)
+
+```
+
+Doing Transformations to the Data. Ex: Adding new columns such as totals 
+```{r}
+airlines_data$sums <- rowSums(airlines_data[, 3:7])
+#print(airlines_data)
+
+#creating a new df for now to test to see if this would be a better approach than having the total_flights row in the original df
+total_flights_df <- airlines_data %>%
+  group_by(Airline) %>%
+  summarise(Total_Flights = sum(sums))
+
+print(total_flights_df)
+
+airlines_data <- airlines_data %>%
+  group_by(Airline) %>%
+  mutate(Total_Flights = sum(sums))
+
+print(airlines_data)
+
+airlines_data <- airlines_data %>%
+  mutate(Percentage = (sums / Total_Flights) * 100)
+
+print(airlines_data)
+
+
+percentages_of_total_per_city_df <- airlines_data %>%
+  group_by(Airline, Status) %>%
+  summarise(
+    Los_Angeles = (Los_Angeles/ sums) * 100,
+    Phoenix = (Phoenix / sums) * 100,
+    San_Diego = (San_Diego / sums) * 100,
+    San_Francisco = (San_Francisco / sums) * 100,
+    Seattle = (Seattle / sums) * 100
+  ) %>%
+  ungroup()
+
+#using this line of code to verify that we get 100%. My small test case to show everything is going good so far. 
+percentages_of_total_per_city_df$sums <- rowSums(percentages_of_total_per_city_df[, 3:7])
+print(percentages_of_total_per_city_df)
+#print(airlines_data)
+
+
+
+```
+
+pie chart for on time 
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+alaska_on_time <- percentages_of_total_per_city_df %>%
+  filter(Airline == "ALASKA" & Status == "on time") %>%
+  select(Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+amwest_on_time <- percentages_of_total_per_city_df %>%
+  filter(Airline == "AM WEST" & Status == "on time") %>%
+  select(Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+plot_pie_chart <- function(data, title) {
+  city_names <- c("Los_Angeles", "Phoenix", "San_Diego", "San_Francisco", "Seattle")
+  flight_values <- as.numeric(data[1, ])
+
+  pie_data <- data.frame(
+    City = city_names,
+    Percentage = flight_values
+  )
+
+  ggplot(pie_data, aes(x = "", y = Percentage, fill = City)) +
+    geom_bar(width = 1, stat = "identity") +
+    coord_polar("y") +
+    labs(title = title, y = "Percentage", x = NULL) +
+    theme_void() +
+    theme(legend.position = "right")
+}
+
+plot_pie_chart(alaska_on_time, "Alaska Airlines - On Time")
+
+plot_pie_chart(amwest_on_time, "AM West Airlines - On Time")
+
+
+```
+pie chart for delay
+```{r}
+alaska_delayed <- percentages_of_total_per_city_df %>%
+  filter(Airline == "ALASKA" & Status == "delayed") %>%
+  select(Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+amwest_delayed <- percentages_of_total_per_city_df %>%
+  filter(Airline == "AM WEST" & Status == "delayed") %>%
+  select(Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+plot_pie_chart <- function(data, title) {
+  city_names <- c("Los_Angeles", "Phoenix", "San_Diego", "San_Francisco", "Seattle")
+  flight_values <- as.numeric(data[1, ])
+
+  pie_data <- data.frame(
+    City = city_names,
+    Percentage = flight_values
+  )
+
+  ggplot(pie_data, aes(x = "", y = Percentage, fill = City)) +
+    geom_bar(width = 1, stat = "identity") +
+    coord_polar("y") +
+    labs(title = title, y = "Percentage", x = NULL) +
+    theme_void() +
+    theme(legend.position = "right")
+}
+
+plot_pie_chart(alaska_delayed, "Alaska Airlines - Delayed")
+
+plot_pie_chart(amwest_delayed, "AM West Airlines - Delayed")
+
+
+```
+
+Bar chart for alaska airlines
+```{r}
+alaska_data <- airlines_data %>%
+  filter(Airline == "ALASKA") %>%
+  select(Status, Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+long_alaska_data <- alaska_data %>%
+  pivot_longer(cols = Los_Angeles:Seattle, 
+               names_to = "City", 
+               values_to = "Flights")
+
+# Create the bar chart
+ggplot(long_alaska_data, aes(x = City, y = Flights, fill = Status)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Alaska Airlines On Time vs Delayed Flights by City", 
+       x = "City", 
+       y = "Number of Flights") +
+  theme_minimal() +
+  scale_fill_manual(values = c("on time" = "blue", "delayed" = "red")) +
+  theme(legend.title = element_blank())
+
+
+```
+Alaksa airlines stacked
+```{r}
+ggplot(long_alaska_data, aes(x = City, y = Flights, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Alaska Airlines: On Time vs Delayed Flights by City)", 
+       x = "City", 
+       y = "Number of Flights") +
+  theme_minimal() +
+  scale_fill_manual(values = c("on time" = "blue", "delayed" = "red")) +
+  theme(legend.title = element_blank())
+
+```
+I Would rather used the stacked bar chart than side by side 
+
+
+Am west bar chart stacked
+```{r}
+am_west_data <- airlines_data %>%
+  filter(Airline == "AM WEST") %>%
+  select(Status, Los_Angeles, Phoenix, San_Diego, San_Francisco, Seattle)
+
+long_am_west_data <- am_west_data %>%
+  pivot_longer(cols = Los_Angeles:Seattle, 
+               names_to = "City", 
+               values_to = "Flights")
+
+
+ggplot(long_am_west_data, aes(x = City, y = Flights, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "AM WEST Airlines: On Time vs Delayed Flights by City)", 
+       x = "City", 
+       y = "Number of Flights") +
+  theme_minimal() +
+  scale_fill_manual(values = c("on time" = "blue", "delayed" = "red")) +
+  theme(legend.title = element_blank())
+
+```
+
+
+
+After making my bar chart and pie charts and taking percentages, I am ready to talk about the flight delays for both airlines. 
+When I created the pie chart, at first it was easy for me to say to avoid Alaska Airlines and AM West Airlines going to Seattle but definitely take both when going to Phoenix. These however are just showing percentages delays. The Bar chart are a better use of the data to see the total comparison for both the delays and the ones that arrived on times. 
+
+Lets Start with Alaska Airlines using the stacked bar chart. We see the majority of flights that are delayed are from settle. 
+Now Lets look at Am West Airlines and we see that phoenix has the highest delays. But both those cities also have th most flights going into those cities by an overwhelmingly majority for both airlines. 
+
+For Am West Airlines, it is kind of hard to compare phoenix to the other cities because phoenix accounts for about 6000 flights compares to the other cities that are each under a thousand flights each. In this case Am West Airlines focuses on flights to phoenix where flights to phoenix would be considered an outlier compared to the other flights. However it is safe to say that customers can confidently take the flights to phoenix as the majority of the flights to pheonix are on time. The same thing can be said about LA, san diego and seattle as the majority of the flights are on time. The issues comes down to going into san francisco because we do have a higher percentage of flight delays compared to the other cities. Consumer confidence might be lower taking am west airlines into san francisco as opposed if they were traveling to the other cities. They are better off taking Alaska airlines to san fransico as the proportion of flight delays to time arrival is lower than am airlines. 
+
+
+Now lets talk about the data we see for alaska airlines. We face the issue as before as we have a large amount of flights going into seattle compared to the other cities. This is why we would see a larger amount of flight delays going into seattle due to there being a large amount of trips landing in seattle. We do however still see that the majority of flights landing in seattle are on time, therefore consumer confidence should remain high as the flights land in seattle. The same thing can be said about the other cities as the majority of flights landing in all the other cities are arriving on time. The flight delays are proportionally low compared to arrival on times. There should be high confidence in taking alaska airlines to arriving into any of the following cities taking alaska airlines. 
+
+
+
+
+
+
