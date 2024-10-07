@@ -1,0 +1,374 @@
+---
+title: "Project 2 Ahmed Hassan"
+author: "Ahmed Hassan"
+date: "2024-10-06"
+output: html_document
+---
+
+Abstract: I know the assignment asked for three data sets but I am using 6. I wanted to look at specifically rent increase over the past few years in nyc. I would add a 6th data set and that is cpi or use the inflation data if rent is not a part of the cpi calculation. The goal that I am trying to accomplish in this project is artificial inflation in the rent prices. In the past three years, nyc has experienced a population decrease. So why has rent increased if the basic principals of supply and demand are to take effect and rent prices are supposed to drop as we seen in the pandemic. Is there market manipulation happening here in the rent prices? My theory is that there is an extreme amount of market manipulation. I cannot form a conclusion in my analysis in this project because this could take months upon months of research. I will however try to get an idea and form a hypothesis at the end of analysis here. Over the past couple of years, nyc has seen an increase of new residential buildings being built, especially empty and vacated land area. So I will ask the question again, why is it that rent increases when there is a decrease in population in nyc residents that is including legal and illegal residents, along with an increase in apartment units in this city if the laws of supply and demand are to be applied. Are we in a fair and free market? Let's find out. 
+
+
+
+Part 1: Reading the data 
+```{r}
+median_income_nyc_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/Median%20individual%20income%20in%20New%20York%20City.csv"
+median_nyc_income <- read.csv(median_income_nyc_url)
+head(median_nyc_income)
+
+
+nyc_housing_count_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/myc_housing_count.csv"
+nyc_housing_count_data <-read.csv(nyc_housing_count_url)
+head(nyc_housing_count_data)
+
+
+nyc_population_2020_2023_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/nyc_population_2020-2023.csv"
+nyc_population_2020_2023_data <- read.csv(nyc_population_2020_2023_url)
+head(nyc_population_2020_2023_data)
+
+
+nyc_population_count_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/nyc_population_count.csv"
+nyc_population_count_data <- read.csv(nyc_population_count_url)
+head(nyc_population_count_data)
+
+median_rent_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/Zip_zori_uc_sfrcondomfr_sm_month.csv"
+nyc_median_rent_data <- read.csv(median_rent_url)
+head(nyc_median_rent_data)
+
+
+nyc_zip_code_url <- "https://raw.githubusercontent.com/Ahmed572/Data607_HW_Assignments_Ahmed_Hassan/refs/heads/master/data/nyc_data/nyc_zipcodes.csv"
+nyc_zip_code_list <- read.csv(nyc_zip_code_url, header = FALSE)
+
+nyc_zipcodes_list <- as.list(as.data.frame(t(nyc_zip_code_list)))
+
+#print(nyc_zipcodes_list)
+
+```
+
+Filtering columns/Renaming columns 
+```{r}
+library(dplyr)
+colnames(median_nyc_income)
+
+median_nyc_income <- median_nyc_income %>%
+  select("Variable.observation.date", "Variable.observation.value")
+
+median_nyc_income <- median_nyc_income %>%
+  rename(
+    year = Variable.observation.date,
+    nyc_median_income = Variable.observation.value
+  )
+
+#print(median_nyc_income)
+
+
+
+colnames(nyc_housing_count_data)
+
+nyc_housing_count_data <- nyc_housing_count_data %>%
+  select("placeName", "Date.Count_HousingUnit", "Value.Count_HousingUnit")
+nyc_housing_count_data <- nyc_housing_count_data %>%
+  rename(
+    zipcode = placeName,
+    year = Date.Count_HousingUnit,
+    total_units = Value.Count_HousingUnit
+  )
+head(nyc_housing_count_data)
+
+
+#need only one row from here and that is region = New York city, New York
+colnames(nyc_population_2020_2023_data)
+nyc_population_2020_2023_data <- nyc_population_2020_2023_data %>%
+  select("Geographic.Area", "X2020", "X2021", "X2022", "X2023")
+
+nyc_population_2020_2023_data <- nyc_population_2020_2023_data %>%
+  rename(
+    region = Geographic.Area,
+    '2020' = X2020,
+    '2021' = X2021,
+    '2022' = X2022,
+    '2023' = X2023 
+  )
+#print(nyc_population_2020_2023_data)
+
+
+colnames(nyc_population_count_data)
+nyc_population_count_data <- nyc_population_count_data %>%
+  select("placeName", "Date.Count_Person", "Value.Count_Person")
+
+nyc_population_count_data <- nyc_population_count_data %>%
+  rename(
+    zipcode = placeName, 
+    year = Date.Count_Person, 
+    population_total = Value.Count_Person
+  )
+
+head(nyc_population_count_data)
+
+
+
+```
+
+
+
+Transforming and merging nyc population
+```{r}
+library(tidyr)
+
+
+nyc_population_2020_2023_data_filtered <- nyc_population_2020_2023_data %>%
+  filter(region == "New York city, New York")
+
+#print(nyc_population_2020_2023_data_filtered)
+
+
+nyc_population2020_2023_data <- nyc_population_2020_2023_data_filtered %>%
+  pivot_longer(
+    cols = `2020`:`2023`, 
+    names_to = "year",    
+    values_to = "total_population"  
+  )
+
+#there is no need for the region column 
+nyc_population2020_2023_data <- nyc_population2020_2023_data %>%
+  select("year", "total_population")
+
+
+nyc_population2020_2023_data <- nyc_population2020_2023_data %>%
+  mutate(year = as.integer(year))
+
+#print(nyc_population2020_2023_data)
+
+
+nyc_population2020_2023_data <- nyc_population2020_2023_data %>%
+  mutate(total_population = gsub("[^0-9]", "", total_population))
+
+nyc_population2020_2023_data <- nyc_population2020_2023_data %>%
+  mutate(total_population = as.integer(total_population))
+
+
+nyc_population2020_2023_data <- nyc_population2020_2023_data %>%
+  filter(year %in% c(2021, 2022, 2023))
+
+
+#print(nyc_population2020_2023_data)
+
+
+
+
+
+total_population_by_year <- nyc_population_count_data %>%
+  group_by(year) %>%
+  summarize(total_population = sum(population_total, na.rm = TRUE))
+
+
+total_population_by_year <- total_population_by_year %>%
+  mutate(year = as.integer(year))
+
+
+total_population_by_year_filtered <- total_population_by_year %>%
+  filter(!year %in% c(2021, 2022))
+
+#print(total_population_by_year_filtered)
+
+merged_population_data <- bind_rows(total_population_by_year_filtered, nyc_population2020_2023_data)
+
+head(merged_population_data)
+
+
+```
+
+
+graphing the total population by year from 2011 - 2023
+```{r}
+
+library(ggplot2)
+
+ggplot(merged_population_data, aes(x = year, y = total_population)) +
+  geom_line() +
+  geom_point() +  
+  scale_x_continuous(breaks = merged_population_data$year) +
+  scale_y_continuous(breaks = seq(8000000, 8700000, by = 100000)) +  
+  labs(
+    title = "NYC Total Population 2011 - 2023",
+    x = "Year",
+    y = "Total Population"
+  ) 
+
+
+
+```
+Let me explain why I dropped the years 2021 - 2022 from the total_population_by_year df. The total population did not make sense nor was it consistent with the actual data and what was happening during that time. This was during the pandemic and people were leaving the city to either go upstate, back to other states where they were originally from to work remotely, or completley moved to other states where the cost of living was cheaper. During this time, landlords were struggling to find tenants as rent prices did drop and businesses were struggling to find employees. This was due to the laws of supply and demand. There was a shock to the renter's market where it couldnt handle the shock of all these people leaving at once. The other dataframe that had the population from 2020 - 2023 was more accurate and consistent with other data i found online. That is why I did the filtering and merging of the two datasets the way I did. I would like to find data dating all the way back to the 1900's for nyc population, but I found it was difficult to find this data.
+
+
+
+```{r}
+
+ggplot(median_nyc_income, aes(x = year, y = nyc_median_income)) +
+  geom_line() +
+  geom_point() +  
+  scale_x_continuous(breaks = median_nyc_income$year) +
+  labs(
+    title = "NYC median income 2011 - 2022",
+    x = "Year",
+    y = "Median Income"
+  ) 
+
+#print(median_nyc_income)
+
+```
+
+I do not like this dataset because it does not capture the upper middle class income that is 80k and above. Especially the 6 figure incomes that I am aware are indeed outliers on the national level as well as in nyc. However, the oppurtunity of these kinds of income jobs are available here in nyc than any other part of the country that is why I would like to capture that data. Has that played a role in the rent price boom over the years. Especially during the height of the new era of internet tech companies. The rise of 4G made a big difference in our lives at the start of 2010s and completley changed our worlds. We can see the fast rise in income from the start at 2013 until now. However, I wanted to capture a dataset that had information for the years prior to 2011. Perhaps maybe all the way back to 1980s. That was difficult for me to find as well as government sites are not the friendliest to naviagate. Has the rise of the median household income a direct result of the minimum age rise as well under the DeBlasio administration? Or the big rise in tech jobs all across the city as the demand for tech jobs were hot and the recruitment firms for tech jobs made a killing on their revenue placing these tech workers. I can say that the rise in 2018 to 2020 was when the job market was hot and there was a lot of hiring during that time. This was due to the Tax cuts and jobs Act that lowered personal income tax, and corporate income tax. There was also regulation in doing business overseas in the financial sector, therefore a lot of dollars were moved here into the USA. We also so a second wave boom during the pandemic when it was the employees market vs the employor market. The employee had more negotiating power than the employer, and employers were having a hard time hiring. People were switiching jobs for more pay (including myself) during the pandemic. Companies were willing to compensate employees more not just give a minimum wage rate. 
+
+So comparing this chart to the population chart, we see the rise in wages but a decrease in population. 
+Lets now start working with the suppy of housing data and do a comparison analysis. 
+
+
+grouping the data by year
+```{r}
+
+nyc_housing_count_data <- nyc_housing_count_data %>%
+  group_by(year) %>%
+  summarize(total_units = sum(total_units, na.rm = TRUE))
+
+
+head(nyc_housing_count_data)
+
+
+ggplot(nyc_housing_count_data, aes(x = year, y = total_units)) +
+  geom_line() +
+  geom_point() +  
+  scale_x_continuous(breaks = median_nyc_income$year) +
+  labs(
+    title = "NYC Total Units 2011 - 2022",
+    x = "Year",
+    y = "Total Units"
+  ) 
+
+
+```
+
+So far we see an increase in units, increase in wages, but a decrease in population. 
+
+Lets take a look at the median rent data. This one will be a bit tricky to work with as we are given the median rent per zipcode 
+
+
+```{r}
+
+colnames(nyc_median_rent_data)
+
+nyc_zipcodes_vector <- unlist(nyc_zipcodes_list)
+
+filtered_rent_data <- nyc_median_rent_data %>%
+  filter(RegionName %in% nyc_zipcodes_vector)
+
+head(filtered_rent_data)
+
+
+#creating a new df and taking the median of each date column 
+
+date_columns <- colnames(filtered_rent_data)[grepl("^X", colnames(filtered_rent_data))]
+
+average_rent_nyc_df <- data.frame(
+  Date = gsub("^X", "", date_columns),  # Remove the "X" from the column names to get the date
+  Median = sapply(filtered_rent_data[, date_columns], median, na.rm = TRUE)  # Compute the median for each date column
+)
+average_rent_nyc_df$Mean <- sapply(filtered_rent_data[, date_columns], mean, na.rm = TRUE)
+
+
+average_rent_nyc_df$Date <- as.Date(average_rent_nyc_df$Date, format = "%m.%d.%Y")
+
+head(average_rent_nyc_df)
+
+
+
+ggplot(average_rent_nyc_df, aes(x = Date, y = Median)) +
+  geom_line() +  # Line plot to connect the points
+  geom_point() +  # Add points at each date
+  labs(title = "Median Rent in NYC Over Time",
+       x = "Date",
+       y = "Median Rent")
+
+
+ggplot(average_rent_nyc_df, aes(x = Date, y = Mean)) +
+  geom_line() +  # Line plot to connect the points
+  geom_point() +  # Add points at each date
+  labs(title = "Mean Rent in NYC Over Time",
+       x = "Date",
+       y = "Mean Rent")
+
+
+
+long_average_rent_nyc_df <- pivot_longer(average_rent_nyc_df, 
+                               cols = c("Median", "Mean"), 
+                               names_to = "Statistic", 
+                               values_to = "Value")
+
+ggplot(long_average_rent_nyc_df, aes(x = Statistic, y = Value)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Median and Mean Rent Values",
+       x = "Statistic",
+       y = "Rent Values")
+
+
+
+
+
+
+#colnames(filtered_rent_data) <- ifelse(grepl("^X", colnames(filtered_rent_data)), gsub("^X", "", #colnames(filtered_rent_data)), colnames(filtered_rent_data))
+
+
+
+
+
+#nyc_median_rent_data <- nyc_median_rent_data %>%
+#  select("placeName", "Date.Monthly_Median_GrossRent_HousingUnit", "Value.Monthly_Median_GrossRent_HousingUnit")
+#nyc_median_rent_data <- nyc_median_rent_data %>%
+#  rename(
+#    zipcode = placeName,
+#    year = Date.Monthly_Median_GrossRent_HousingUnit,
+#    median_gross_rent = Value.Monthly_Median_GrossRent_HousingUnit
+#  )
+
+
+#print(nyc_zipcodes_list)
+
+#head(nyc_median_rent_data)
+
+
+
+
+```
+
+
+
+```{r}
+
+long_rent_data <- pivot_longer(filtered_rent_data, 
+                               cols = starts_with("X"), 
+                               names_to = "Date", 
+                               values_to = "Rent")
+
+long_rent_data$Date <- gsub("^X", "", long_rent_data$Date)
+
+# Convert the Date column to proper date format
+long_rent_data$Date <- as.Date(long_rent_data$Date, format = "%m.%d.%Y")
+
+
+ggplot(long_rent_data, aes(x = Date, y = Rent)) +
+  geom_point(color = "blue") + 
+  geom_smooth(method = "lm", se = FALSE, color = "black") + 
+  labs(title = "Scatterplot of Rent Values Over Time for all zipcodes in nyc",
+       x = "Date",
+       y = "Rent Values") +
+  theme_minimal()
+
+
+```
+
+Final Thoughts after doing this data. Since the median rent price in nyc reached over $2800 in nyc and the median income is under $40,000, then more than half the population is homeless. But somehow that is not the case. What my data shows is a broad view of what is going on in the rent prices. Except obviously for my last chart where I decided to graph everything by brute force and see whats been going on per zipcode in all five of the boroughs. What I would like to talk about is my findings here. Despite the popultion decrease and the increase in the supply in units, there is an increase in the mean rent prices on a month by month basis. I want to hypothesize there is some market manipulation going on and I wouldn't even account inflation as the problem here. The dollar is the strongest currency in the world, despite what many people think about money printing since the pandemic, we actually shrunk our money supply since then. Please check the M2 money supply on the FRED website to confirm. 
+
+We did have a lot of people return to nyc and return to the office since the start of 2023. However we still got a decrease in population. I would even argue a decrease in white colar wages, although I would need to add a 7th data set here to confirm. I am making the case for the decrease in wages because I was unemployed for 3 months this year, and I was applying, the jobs postings had a less hourly rate than they did back during the pandemic or even in 2019. If I were to go into more debth for this I would go look into vacant apartment units vs nonvacant in 2022-2024. The reason for this is that I want to confirm what is being told on the news with landlords keeping units vacant on purpose in order to drive up the rent prices. I would also try to look for salaries of white colar workers in nyc to see if they are also driving up the rent prices. 
+
+
+I want to add one final note about something I observed in real life that is not part of the data. Over the past 5 years I have seen many new construction of high rise buildings all around queens and brooklyn. I would also belive that the dataset for the total units are being under counted in the city. 
+
