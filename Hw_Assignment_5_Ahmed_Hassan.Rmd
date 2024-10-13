@@ -1,0 +1,83 @@
+---
+title: "Hw_Assignment_5_Ahmed_Hassan"
+author: "Ahmed Hassan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+#install.packages("rvest")
+#install.packages("xml2")
+#install.packages("jsonlite")
+library(rvest)
+library(xml2)
+library(jsonlite)
+library(dplyr)
+
+
+```
+
+html
+```{r}
+html_file_path <- "./data/books/books.html"
+books_html_data <- read_html(html_file_path)
+books_df_html <- html_table(books_html_data, fill = TRUE, header = TRUE)[[1]]
+print(books_df_html)
+
+```
+xml
+```{r}
+
+xml_file_path <- "./data/books/books.xml"
+books_xml_data <- read_xml(xml_file_path)
+
+print(books_xml_data)
+
+book_nodes <- xml_find_all(books_xml_data, ".//book")
+
+books_df_xml <- data.frame(
+  title = character(),
+  authors = character(),
+  year = character(),
+  genre = character(),
+  pageCount = character(),
+  isbn = character(),
+  stringsAsFactors = FALSE  
+)
+
+for (i in seq_along(book_nodes)) {
+  book_node <- book_nodes[i]
+  books_df_xml <- rbind(books_df_xml, data.frame(
+    title = xml_text(xml_find_first(book_node, "title")),
+    authors = xml_text(xml_find_first(book_node, "authors")),
+    year = xml_text(xml_find_first(book_node, "year")),
+    genre = xml_text(xml_find_first(book_node, "genre")),
+    pageCount = xml_text(xml_find_first(book_node, "pageCount")),
+    isbn = xml_text(xml_find_first(book_node, "isbn")),
+    stringsAsFactors = FALSE
+  ))
+}
+
+print(books_df_xml)
+```
+
+
+
+
+json
+```{r}
+json_file_path <- "./data/books/books.json"
+books_df_json <- fromJSON(json_file_path, flatten = TRUE)
+print(books_df_json)
+
+```
+
+
+The three dataframes are identical
+I had to tweek the xml data loaded in first in order to get the results I wanted 

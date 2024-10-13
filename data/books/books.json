@@ -1,0 +1,26 @@
+[
+    {
+        "title": "The Joy of X: A Guided Tour of Math, from One to Infinity",
+        "authors": "Steven Strogatz",
+        "year": 2023,
+        "genre": "Education",
+        "pageCount": 336,
+        "isbn": "978-0544105850"
+    },
+    {
+        "title": "The Calculus Lifesaver: All the Tools You Need to Excel at Calculus",
+        "authors": "Adrian Banner",
+        "year": 2023,
+        "genre": "Academic",
+        "pageCount": 752,
+        "isbn": "978-0691130880"
+    },
+    {
+        "title": "Sacred Mathematics: Japanese Temple Geometry",
+        "authors": "Fukagawa Hidetoshi, Tony Rothman",
+        "year": 2023,
+        "genre": "History/Mathematics",
+        "pageCount": 392,
+        "isbn": "978-0691127453"
+    }
+]
