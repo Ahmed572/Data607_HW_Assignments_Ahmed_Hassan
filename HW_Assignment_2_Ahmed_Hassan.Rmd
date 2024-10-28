@@ -42,6 +42,7 @@ password <- Sys.getenv("DB_PASSWORD")
 host <- Sys.getenv("DB_HOST")
 
 
+file.path(Sys.getenv("HOME"), ".Renviron")
 
 connection <- dbConnect(MySQL(), 
                  user = user, 

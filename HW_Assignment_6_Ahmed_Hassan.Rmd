@@ -1,0 +1,41 @@
+---
+title: "hw_assignment6"
+author: "Ahmed Hassan"
+date: "2024-10-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(httr)
+library(jsonlite)
+```
+
+```{r}
+api_key <- Sys.getenv("NY_TIMES_API_KEY")
+
+url <- paste0("https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=", api_key)
+response <- GET(url)
+status_code(response)
+content <- content(response, "text")
+json_data <- fromJSON(content, flatten = TRUE)
+#str(json_data)
+
+df <- as.data.frame(json_data$results$books)
+
+print("Json to Data Frame")
+print(df)
+
+```
+
+
+
