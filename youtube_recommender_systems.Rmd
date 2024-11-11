@@ -1,0 +1,68 @@
+---
+title: "Youtube Recommender system"
+author: "Ahmed Hassan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# YouTube Recommendation System Scenario Design Analysis
+
+## 1. Introduction
+In this report, I analyzed the YouTube video recommendation system using a scenario design framework. YouTube's recommender system deploys deep learning techniques to provide personalized video suggestions, aiming to enhance user engagement and satisfaction.
+
+## 2. Scenario Design Analysis
+
+### YouTube
+1. **Who are the target users?**
+   - YouTube's target users for the recommendation system are individuals across all demographics who regularly watch videos on YouTube. This includes casual viewers, content consumers with specific interests, and users looking for engaging or trending content.
+
+2. **What are their key goals?**
+   - **Increase User Engagement and Watch Time**: YouTube aims to boost user engagement by encouraging longer viewing sessions and return 
+   - **Deliver Personalized Content**: YouTube seeks to enhance user satisfaction by providing a tailored experience based on user interests and viewing history.
+   - **Improve Ad Revenue**: By keeping users engaged, YouTube increases ad views, contributing to revenue growth.
+
+3. **How can you help them accomplish those goals?**
+   - YouTube’s deep neural network-based recommendation system helps achieve these goals by leveraging vast user interaction data to suggest relevant videos. The system adapts recommendations in real time based on a user’s watch history and other behaviors, enhancing engagement and meeting YouTube’s business objectives.
+
+### For the Customers
+1. **Who are the target users?**
+   - YouTube’s recommendation system serves a diverse group of users who seek an enjoyable and customized video-watching experience. Users may look for entertainment, information, or educational content, depending on their interests and the time they spend on the platform.
+
+2. **What are their key goals?**
+   - **Find Relevant Content Quickly**: Users want to find videos that align with their interests, preferences, or current trends without searching extensively whether that being recommended on the home page or using the search engine. 
+   - **Discover New Content**: Many users enjoy discovering new creators or topics that they may have not actively searched for.
+   - **Maximize Entertainment and Learning Value**: Users want an experience that maximizes engagement, enjoyment, or learning based on their needs and interests.
+
+3. **How can you help them accomplish those goals?**
+   - By analyzing user interactions, YouTube's recommendation system generates a feed that follows videos related to users' viewing patterns. This system helps users discover relevant videos and new content easily.
+
+## 3. Reverse Engineering of YouTube's Recommender System
+
+Based on the article “Deep Neural Networks for YouTube Recommendations,” YouTube’s recommender system is composed of a **two-stage deep learning architecture**:
+
+1. **Candidate Generation**: This stage narrows down YouTube’s catalog to a small subset of relevant videos by analyzing user activity and general preferences. It uses collaborative filtering and incorporates basic user features like watch history and search terms to retrieve a few hundred video candidates.
+
+2. **Ranking Model**: In the second stage, YouTube’s ranking model evaluates each candidate based on more detailed features, optimizing for metrics like expected watch time. This neural network model scores the videos for personalized ranking, focusing on user-video relationships.
+
+The article highlights practical challenges, such as balancing content freshness, handling massive data volumes, and managing noisy signals from implicit feedback. By using deep learning to accurately model preferences, YouTube’s recommendation system can effectively scale and deliver relevant recommendations across a dynamic content library.
+
+## 4. Recommendations for Improvement
+
+1. **Context-Aware Recommendations**: Enhance personalization by incorporating contextual factors like location, time of day, or trending topics. For instance, recommending local news or trending topics during specific times could make content more relevant.
+   
+2. **More Control for Users Over Recommendations**: Allow users to refine their preferences within recommendations. This could include filtering categories, dismissing certain topics, or adjusting the balance between familiar and novel content.
+   
+3. **Social-Based Recommendations**: Incorporate a community-based approach by suggesting videos popular among similar user groups or showcasing emerging creators, adding a sense of discovery and social proof.
+   
+4. **Feedback Options for Users**: Introduce a feedback mechanism where users can indicate interest levels. For example, “not interested” or “show more like this”. This would improve accuracy by learning from explicit feedback, addressing limitations in implicit feedback alone.
+
+## 5. Conclusion
+YouTube’s recommendation system effectively enhances the user experience by providing personalized video suggestions based on viewing patterns. The outlined improvements could further optimize engagement, increase user satisfaction, and support YouTube's business goals by enhancing user control, context-awareness, and social connectivity in recommendations.
+
+## Citation
+Covington, P., Adams, J., & Sargin, E. (2016). *Deep Neural Networks for YouTube Recommendations*. Proceedings of the 10th ACM Conference on Recommender Systems, 191-198.  https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45530.pdf
+

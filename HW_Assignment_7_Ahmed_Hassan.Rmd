@@ -1,0 +1,59 @@
+---
+title: "HW_Assignment_7_Ahmed_Hassan"
+author: "Ahmed Hassan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#install.packages("tidytext")
+#install.packages("gutenbergr")
+
+library(tidyverse)
+library(tidytext)
+library(gutenbergr) 
+
+```
+
+
+
+
+```{r}
+
+text_data <- gutenberg_download(1342)
+
+# Preprocess and tokenize the text
+tidy_text <- text_data %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words, by = "word") %>%
+  mutate(word = tolower(word))
+
+# Perform sentiment analysis using Bing lexicon
+counted_sentiments_bing <- tidy_text %>%
+  inner_join(get_sentiments("bing"), by = "word") %>%
+  count(sentiment)
+
+# Print the result
+print(counted_sentiments_bing)
+
+# Additional Sentiment Analysis with another lexicon (Example: AFINN)
+# Ensure to install and load the necessary package if you use a different lexicon
+counted_sentiments_afinn <- tidy_text %>%
+  inner_join(get_sentiments("afinn"), by = "word") %>%
+  summarise(score = sum(value)) %>%
+  mutate(sentiment = ifelse(score > 0, "positive", ifelse(score < 0, "negative", "neutral")))
+
+# Print the AFINN result
+print(counted_sentiments_afinn)
+
+
+```
+
+
+```{r}
+The sentiment analysis base code is adapted from Silge, J., & Robinson, D. (2017). Text Mining with R: A Tidy Approach. O'Reilly Media. Available at: https://www.tidytextmining.com/sentiment.html
+```
